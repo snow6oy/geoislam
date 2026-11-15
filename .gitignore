@@ -1,2 +1,9 @@
-__pycache__/
-.DS_Store
+eb203.py
+Archive/*
+.*.swp
+circle.py
+pcloud
+tmp
+**/__pycache__/
+**/.DS_Store
+**/__init__.py

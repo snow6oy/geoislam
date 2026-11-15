@@ -1,7 +1,7 @@
 # geoislam
 Islamic geometry for pen plotters
-# Geoislam
 
+## Motivation
 Instead of extending recurrink, geomislam will be clean break. New code to plot islamic geometry. The scope is:
 
 1. generate circles and polygons
