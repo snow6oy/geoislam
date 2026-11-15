@@ -2,64 +2,58 @@
 Islamic geometry for pen plotters
 
 ## Motivation
-Instead of extending recurrink, geomislam will be clean break. New code to plot islamic geometry. The scope is:
+Recurrink (see other repository) generates SVG for plotters based on config.
+Instead of extending recurrink, geoislam is a clean break. New code to plot islamic geometry. The main difference is that designs are scripted rather than configured. The scope is:
 
 1. generate circles and polygons
 2. decompose into smaller shapes wherever they intersect
 3. meander each shape
-4. transform shapes into SVG
+4. compose shapes into an SVG block
 
-Once imported into inkscape
-1. discard redundant shapes
-2. group and colorise
-3. tesselate 
+Once imported into Inkscape
+1. add color and tesselate 
 
 ## Inkscape tricks
 
 ### Group and colorise
+> Plotter needs one layer per colour  
+
 - Right click selected object
 - Choose `Select Same` > `Stroke Colour`
 - Move selected objects to the Layer for that colour
 
 ### Crop
-- Tesselated isometric grids overhang
+> Tesselated isometric grids overhang border
+
 - Overlay a rectangle to divide what is to be kept and discarded
 - Select both the object to be cropped and the rectangle
 - Choose `Path` > `Intersection`  
 Only vectors inside the rectangle remain
 
 ### Stroke Width
-Stroke widths are set a .5 or 1mm but Inkscape renders them
+> Stroke widths are set a .5 or 1mm but Inkscape renders them
 without any gaps, making it impossible to see the meander lines.
 
-To overcome this manually set to a lower value, e.g. 1mm becomes .7mm.
-You can do this in Python, but Inkscape will ignore you :sob:
-
+`SixStar.__init__` will set gap at .1mm less than stroke width.
+ but sometimes Inkscape will ignore us :sob:.
+To overcome this manually set stroke width to an even lower value, e.g. 1mm becomes .7mm.
 
 ## Runtime
 Neither sesenta or this project have successful shapely installs.
-Instead, start the code/recurrink virtual env and cd ../geoislam
+Instead, start the `code/recurrink virtual env` and `cd ../geoislam`
 
 ## TODO
-1. add geoislam
-1. use passw.py to create project folders on pcloud
-1. refactor six.py 1) draw() returns single 2) remove XY fromCircle()
-
-1. offset stars in fromCircle t.six.Test.test_a
-
-1. YAML config reader ./geomislam CONF --init
-1. validate inputs with Pydantic
-1. merge six.main and eight.main and call generic methods eg. shape.drawPetals
+1. custom script based on eight 
 
 ## HOWTO
 
 ### Meander with different pen widths
 Meander has a default two axis method for drawing petals. Six and Eight shapes also have three and four axis methods. Pen widths can be either fineliner (0.5mm) or standard (1mm).Only the two axis method supports fineliners. 
 
-![](svg/sixstar.svg)  
+![](images/sixstar.svg)  
 __Six Star Petals__
 
-![](svg/octagon_grid.svg)  
+![](images/octagon_grid.svg)  
 __Eight Star Octagon__
 
 
@@ -72,7 +66,7 @@ Both stars are constructed from hex/oct shapes. Use the pos arg to control which
 ```
 star8.octagonPoints(polygn, pos='outer')
 ```
-![](svg/io.svg)
+![](images/io.svg)
 
 
 ### Build SVG files with make
@@ -100,5 +94,6 @@ _custom script should create a block like above_
 
 
 ## Shapes
+Some nice things to do .. later :grin:
 
 ![](images/zellige.jpg)

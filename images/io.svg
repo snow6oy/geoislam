@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 70" width="70mm" height="70mm" style="border: 0mm solid #000000;">
+  <!-- cell length: 70-->
+  <g id="1" style="fill:none;stroke:#000;stroke-width:1">
+    <polyline id="2" points="25.0,11.0 45.0,11.0 59.0,25.0 59.0,45.0 45.0,59.0 25.0,59.0 11.0,45.0 11.0,25.0 25.0,11.0" />
+    <polyline id="3" points="35.0,1.0 59.0,11.0 69.0,35.0 59.0,59.0 35.0,69.0 11.0,59.0 1.0,35.0 11.0,11.0 35.0,1.0" />
+  </g>
+</svg>
