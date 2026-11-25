@@ -41,14 +41,15 @@ class Args:
       self.shape   = str(args[5])
       if self.render == 'fill' and self.shape == 'petals':
         self.numax  = int(args[6])
-      else: self.facing = str(args[6])
+      elif args[6]: # ignore blank string and default to N 
+        self.facing = str(args[6])
     elif len(args) == 8:
       self.svgfile = str(args[1])
       self.hw      = int(args[2])
       self.swd     = float(args[3])
       self.render  = str(args[4])
       self.shape   = str(args[5])
-      self.facing  = str(args[6])
+      self.facing  = str(args[6]) if args[6] else self.facing
       self.io      = str(args[7])
     else:
       self.ok = False

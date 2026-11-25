@@ -78,20 +78,26 @@ make all      # everything
 ```
 The make commands call the PY files with the options to make the target. Global vars are height width (hw) and stroke width (swd). These need to be set in the Makefile.
 
-### Creating a composite block
-To avoid repetitive work in Inkscape, a custom script could compose a repeatable block using the base shapes defined in the Python classes.
-
-1. Add XY inputs to .fromCircle() so xy can be offset
-2. Write a new class that returns a collection of construction lines 
-3. With shapely.intersect and interpolate create star instances with offsets
-4. Crop shapes that overhang the cell boundary
-5. Use SvgModel to generate SVGs from shapes
+### Create a composite block
+To avoid repetitive work in Inkscape, write a custom script to compose a repeatable block. 
 
 ![](images/ericBroug203a.png)
 ![](images/ericBroug203b.png)
 ![](images/ericBroug203.jpg)
 _custom script should create a block like above_
 
+The script uses the shapes defined in the Python classes.
+Shapes can be created either by the Makefile recipes, or with custom code.
+Inputs to `.fromCircle()` include a centre point so shapes can be offset
+With shapely.intersect shapes that overhang the cell boundary can be cropped.
+
+### Data or algorithm ?
+The custom script can either use a database to transform geometries, or an algorithm.
+The algorithm uses a template to generate eight stars. The database contains entries for each star.
+
+To determine which approach works best.
+1. fork the code with the database on main 
+2. develop interfaces so that the same unit tests can be applied to both versions
 
 ## Shapes
 Some nice things to do .. later :grin:

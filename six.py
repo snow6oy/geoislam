@@ -8,7 +8,7 @@ class SixStar(Line): # inherit from Meander
 
   def __init__(self, hw, stroke_width=1):
     self.hw  = hw           # height width of bounding square
-    self.gap = stroke_width - .1 # control meander gap. avoid inkscape tinker
+    self.gap = stroke_width + .1 # control meander gap. avoid inkscape tinker
 
   def draw(self, a, centre=None):
     ''' orchestrate class functions and return data for svg render
