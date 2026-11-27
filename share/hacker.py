@@ -19,24 +19,17 @@ class LineHacker:
       use target and control references to self to fetch points
       when points are given, use them to create/update self entries
 
-      self entries are a dict k: p1, p2
+      self entries are a dict of coordinates k: p1, p2
       points are stored in shapely format
-
-      use put(tuple) to create entries when no transform needed
 
       OUPUT
       svgdata()
       ouput format is a list of entries as shapely linestrings
-
-      collections(refs)
-      from a given collection of line refs
-      return a linear ring for meander
   '''
   pp  = pprint.PrettyPrinter(indent=2)
 
   def __init__(self):
     self.points = dict()
-    self.rings  = dict()
 
   # inputs example: target, control, p1, p2, p3, p4
   def longer(self, *args):
@@ -50,11 +43,11 @@ class LineHacker:
         p2  p1  |
                 * p4
 
-    print(f'{target=} {control=} {len(points)=}')
+    print(f'{len(args)=} {args}')
+    print(f'{ln1} {ln2}')
     '''
     ln1, ln2, p1, p2, p3, p4 = self.linestrings(*args)
     ln1r = rotate(ln1, 180, origin=p1)
-    #pp.pprint(ln1r)
     p5   = ln1r.intersection(ln2)
     if p2.is_empty or p5.is_empty:
       raise ValueError(f'''no intersect: 
@@ -82,47 +75,13 @@ class LineHacker:
       self.points[target] = (p1, p2)
 
   def svgdata(self):
+    ''' package object content for SvgModel.render()
+    '''
     svgdata = list()
     for p in self.points:
       svgdata.append(LineString((self.points[p]))) 
       #self.pp.pprint(f'{p} {self.points[p]}')
-    '''
-    for r in self.rings:
-      lr = LinearRing(self.rings[r])
-      if lr.is_valid: 
-        svgdata.append(lr)
-      else:
-        raise TypeError(f'{r} is not a valid ring')
-    '''
     return svgdata
-
-  #def addToRings(self, name, touches, crosses, last=None):
-  def addToRings(self, k, p0, *args):
-    '''
-    self.pp.pprint(points)
-    print(self.points[t2])
-    points.append(self.points[t2][0]) # <POINT (32 3.882)>
-    #points.append(self.points[t1][0]) # <POINT (25 1)>
-      print(f"{c1} and {c2} ")
-    #self.pp.pprint(points)
-    '''
-    one, two, crosses = args
-    p1 = self.points[one][0] 
-    p2 = self.points[two][0] 
-    #print(f'{name}: {p0} {one}: {p1} {two}: {p2} {len(crosses)}')
-
-    points = list()
-    points.append(p0) # <POINT (25 1)>
-    points.append(p1) # <POINT (32 3.882)>
-    for coords in crosses:
-      c1, c2 = coords
-      l1 = LineString(self.points[c1])
-      l2 = LineString(self.points[c2])
-      pt = l1.intersection(l2, grid_size=1)
-      if pt.geom_type == 'Point': points.append(pt)
-      else                      : raise TypeError(pt.geom_type)
-    points.append(p2) # last point in ring
-    self.rings[k] = points
 
   def linestrings(self, target, control, *points):
     ''' create linestrings from input or self
@@ -144,63 +103,90 @@ class LineHacker:
     ln2 = LineString((p3, p4))
     return ln1, ln2, p1, p2, p3, p4
 
-  def _put(self, k, p1, p2):
-    if isinstance(p1, tuple):
-      self.points[k] = (Point(p1), Point(p2))
+  def explode(self, A, inner):
+    ''' expand a star point (A-H)
+        map to inner outer and compass points
+    '''
+    compass = (
+      dict.fromkeys(['CA', 'CE', 'EG', 'GH'], 'nwsw')
+      | dict.fromkeys(['AC', 'AB', 'EC', 'BD'], 'nwne')
+      | dict.fromkeys(['BA', 'DB', 'FD', 'FH'], 'nese')
+      | dict.fromkeys(['GE', 'DF', 'HG', 'HF'], 'swse')
+    ) 
+    a  = A.lower()
+    i  = inner.index(a)
+    aa = list()
+    AA = list()
+    stop = len(inner)
+    for j in range(1, stop):
+      max_i   = stop - j
+      inner_i = i + j if i < max_i else i - max_i
+      aa.append(inner[inner_i])
+      AA.append(inner[inner_i].upper())
+  
+    c1 = AA[6] + A
+    c1 = compass[c1]
+    c2 = A + AA[6]
+    c2 = compass[c2]
+    return aa, AA, c1, c2
 
-  def _pointToRing(self, *collectn, last=tuple()):
-    print(collectn)
-    points = list()
-    seen   = set()
-    coords = {k: self.points[k] for k in collectn}
-    # copy of self.points to maintain order
+  def compute(self):
+    ''' build configuration to construct lines
     '''
-    coords = dict() 
-    a = list()
-    [a.append(self.points[k]) for k in collectn]
-    for k in collectn:
-      print(k)
-      coords[k] = self.points[k] 
-    print(coords.keys())
-    self.pp.pprint(coords)
-    print()
-    '''
-    ''' coords is sorted on input order or a-z ?
-        18 3 is missing coord ag[0]
-      wantd = k1 in collectn and k2 in collectn
-      if not wantd: continue
-    '''
-    # Compare every key-value pair with every other pair once
-    for (k1, c1), (k2, c2) in combinations(coords.items(), 2):
-      #print(f'{k1} {k2}')
-      l1 = LineString(c1) 
-      l2 = LineString(c2) 
-      if l1.touches(l2):
-        print(f"{k1} and {k2} touch")
-        p1, p2 = c1[0], c2[0] # first point of each line coordinate
-        if p1 not in seen:
-          points.append(p1)
-          seen.add(p1)
-          self.pp.pprint(p1)
-        if p2 not in seen:
-          points.append(p2)
-          seen.add(p2)
-          self.pp.pprint(p2)
-      elif l1.intersects(l2):
-        pt = l1.intersection(l2, grid_size=1)
-        points.append(pt)
-        print(f"{k1} and {k2} cross")
-        self.pp.pprint(pt)
-    #points.append(coords['ag'][0])
-    points.append(last)
-    #points = set(points)
-    #sp     = sorted(points, key=lambda p: p.y)
-    lr = LinearRing(points)
-    if not lr.is_valid: 
-      print('invalid')
-      self.pp.pprint(points)
-    return lr
+    conf  = dict()
+    outer = list('ABDFHGEC')
+    inner = list('abdfhgec')
+    for K in outer:
+      a, A, c1, c2 = self.explode(K, inner)
+      k = K.lower()
+      i = inner.index(k)
+      conf[K] = dict()
+      conf[K]['points'] = list()
+      ''' lookup table - very handy
+      [print(z, y, end=(' '), flush=True) for y, z in enumerate(a)]
+      print() 
+      '''
+      if K in ['A']: 
+        conf[K]['points'].append([True, k+a[4], K+A[6], k, a[4], K, A[6]])
+        conf[K]['points'].append([True, k+a[2], K+A[6], k, a[2], K, A[6]])
+      elif K in ['C']: 
+        conf[K]['points'].append([True, k+a[2], K+A[6], k, a[2], K, A[6]])
+        conf[K]['points'].append([True, k+a[4], K+A[6], k, a[4], K, A[6]])
+      elif K in ['D', 'E', 'H']: 
+        conf[K]['points'].append([True, k+a[4], A[6]+K, k, a[4], A[6], K])
+        conf[K]['points'].append([True, k+a[2], A[6]+K, k, a[2], A[6], K])
+      else: 
+        conf[K]['points'].append([True, k+a[2], A[6]+K, k, a[2], A[6], K])
+        conf[K]['points'].append([True, k+a[4], A[6]+K, k, a[4], A[6], K])
+      
+      conf[K]['points'].append([False, k+a[4], a[5]+a[0], a[5], a[0]])
+      conf[K]['points'].append([False, k+a[2], a[6]+a[1], a[6], a[1]])
+      if K in ['F', 'C']: 
+        conf[K]['points'].append([True, A[6]+K, c1, K, A[6], c1[:2], c1[2:]])
+        conf[K]['points'].append([False, A[6]+K, k+a[4]])
+        conf[K]['points'].append([True, K+A[6], c2, A[6], K, c2[:2], c2[2:]])
+        conf[K]['points'].append([False, K+A[6], k+a[2]])
+      else:
+        conf[K]['points'].append([True, A[6]+K, c1, A[6], K, c1[:2], c1[2:]])
+        conf[K]['points'].append([False, A[6]+K, k+a[2]])
+        conf[K]['points'].append([True, K+A[6], c2, K, A[6], c2[:2], c2[2:]])
+        conf[K]['points'].append([False, K+A[6], k+a[4]])
+      ''' rings
+      pairs = (a[0]+a[3], a[0]+a[5]), (k+a[2], a[0]+a[5]), (k+a[4], k+a[2])
+      conf[K]['rings'] = (a[0]+a[3], k+a[4], pairs)
+      '''
+    return conf
 
+  def dumpConf(self, conf, wantd=None):
+    for K in conf:
+      if wantd not in conf[K]: continue
+      if wantd == 'points':
+        [print(' '.join(p[1:])) for p in conf[K]['points']]
+      elif wantd == 'rings':
+        r = conf[K]['rings']
+        argstr = ' '.join(r[2][0] + r[2][1] + r[2][2])
+        print(f'{K} {r[0]} {r[1]} {argstr}')
+  
 '''
 the
 end
